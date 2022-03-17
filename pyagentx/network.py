@@ -31,7 +31,7 @@ class Network(threading.Thread):
         self._queue = queue
         self._oid_list = oid_list
         self._sethandlers = sethandlers
-        self._recv_buf = b''
+        self._recv_buf = bytes()
 
         self.session_id = 0
         self.transaction_id = 0
