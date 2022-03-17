@@ -12,12 +12,10 @@ logger.addHandler(NullHandler())
 
 import struct
 import pprint
-
 import pyagentx
 
 
 class PDU(object):
-
 
     def __init__(self, type=0):
         self.type = type
@@ -30,7 +28,6 @@ class PDU(object):
         self.state = {}
         self.values = []
 
-    
     def dump(self):
         name = pyagentx.PDU_TYPE_NAME[self.type]
         logger.debug('PDU DUMP: New PDU')
@@ -45,7 +42,6 @@ class PDU(object):
             logger.debug('PDU DUMP: Values    : %s' % pprint.pformat(self.values))
         if hasattr(self, 'range_list'):
             logger.debug('PDU DUMP: Range list: %s' % pprint.pformat(self.range_list))
-
 
     # ====================================================
     # encode functions
@@ -66,14 +62,12 @@ class PDU(object):
             buf += struct.pack('!L', oid[i])
         return buf
 
-
     def encode_octet(self, octet):
         buf = bytes(struct.pack('!L', len(octet)))
         buf += bytes(octet.encode('utf8'))
         padding = ( 4 - ( len(octet) % 4 ) ) % 4
         buf += bytes( (chr(0)* padding).encode('utf8') )
         return buf
-
 
     def encode_value(self, type, name, value):
         buf = struct.pack('!HH', type, 0)
@@ -95,7 +89,6 @@ class PDU(object):
             logger.error('Unknown Type:' % type)
         return buf
 
-
     def encode_header(self, pdu_type, payload_length=0, flags=0):
         flags = flags | 0x10  # Bit 5 = all ints in NETWORK_BYTE_ORDER
         buf = struct.pack('BBBB', 1, pdu_type, flags, 0)
@@ -104,7 +97,6 @@ class PDU(object):
         buf += struct.pack('!L', self.packet_id) # packetID
         buf += struct.pack('!L', payload_length)
         return buf
-
 
     def encode(self):
         buf = bytes()
@@ -224,7 +216,6 @@ class PDU(object):
             logger.error('Unknown Type: %s' % vtype)
         return {'type':vtype, 'name':oid, 'data':data}
 
-
     def decode_header(self):
         try:
             t = struct.unpack('!BBBBLLLL', self.decode_buf[:20])
@@ -253,7 +244,6 @@ class PDU(object):
         except Exception as e:
             logger.exception('Invalid packing: %d' % len(self.decode_buf))
             logger.debug('%s' % pprint.pformat(self.decode_buf))
-
 
     def decode(self, buf):
         self.set_decode_buf(buf)
