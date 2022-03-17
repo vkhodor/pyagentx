@@ -3,3 +3,5 @@
 build/
 dist/
 pyagentx.egg-info/
+.idea/
+
