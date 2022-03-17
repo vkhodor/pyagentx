@@ -139,15 +139,11 @@ class PDU(object):
 
         return self.encode_header(self.type, len(buf)) + buf
 
-
-
-
     # ====================================================
     # decode functions
 
     def set_decode_buf(self, buf):
         self.decode_buf = buf
-
 
     def decode_oid(self):
         try:
@@ -174,7 +170,11 @@ class PDU(object):
             logger.debug('%s' % pprint.pformat(self.decode_buf))
 
     def decode_search_range(self):
-        start_oid, include = self.decode_oid()
+        try:
+            start_oid, include = self.decode_oid()
+        except TypeError as e:
+            logger.exception('Can not unpack decode_oid result.')
+            start_oid = []
         if start_oid == []:
             return [], [], 0
         end_oid, _ = self.decode_oid()
@@ -186,7 +186,6 @@ class PDU(object):
             range_list.append(self.decode_search_range())
         return range_list
 
-    
     def decode_octet(self):
         try:
             t = struct.unpack('!L', self.decode_buf[:4])
@@ -198,7 +197,6 @@ class PDU(object):
             return buf
         except Exception as e:
             logger.exception('Invalid packing octet header')
-
 
     def decode_value(self):
         try:
