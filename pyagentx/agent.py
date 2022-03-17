@@ -15,7 +15,7 @@ import inspect
 try:
     import queue
 except ImportError:
-    import Queue as queue
+    import queue as queue
 
 import pyagentx
 from pyagentx.updater import Updater

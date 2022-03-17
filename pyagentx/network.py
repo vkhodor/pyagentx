@@ -17,7 +17,7 @@ import struct
 try:
     import queue
 except ImportError:
-    import Queue as queue
+    import queue as queue
 
 import pyagentx
 from pyagentx.pdu import PDU
