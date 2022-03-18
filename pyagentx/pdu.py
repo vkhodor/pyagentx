@@ -47,15 +47,18 @@ class PDU(object):
     # encode functions
 
     def encode_oid(self, oid, include=0):
-        oid = oid.strip()
-        oid = oid.split('.')
-        oid = [int(i) for i in oid]
-        if len(oid)>5 and oid[:4] == [1,3,6,1]:
-            # prefix
-            prefix = oid[4]
-            oid = oid[5:]
-        else:
-            # no prefix
+        try:
+            oid = oid.strip()
+            oid = oid.split('.')
+            oid = [int(i) for i in oid]
+            if len(oid)>5 and oid[:4] == [1,3,6,1]:
+                # prefix
+                prefix = oid[4]
+                oid = oid[5:]
+            else:
+                # no prefix
+                prefix = 0
+        except AttributeError as e:
             prefix = 0
         buf = struct.pack('BBBB', len(oid), prefix, include, 0)
         for i in range(len(oid)):
