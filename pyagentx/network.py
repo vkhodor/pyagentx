@@ -183,13 +183,17 @@ class Network(threading.Thread):
                 for rvalue in request.range_list:
                     oid = rvalue[0]
                     logger.debug("OID: %s" % (oid))
-                    if oid in self.data:
-                        logger.debug("OID Found")
-                        response.values.append(self.data[oid])
-                    else:
-                        logger.debug("OID Not Found!")
-                        response.values.append({'type':pyagentx.TYPE_NOSUCHOBJECT, 'name':rvalue[0], 'value':0})
-
+                    try:
+                        if oid in self.data:
+                            logger.debug("OID Found")
+                            response.values.append(self.data[oid])
+                        else:
+                            logger.debug("OID Not Found!")
+                            response.values.append({'type':pyagentx.TYPE_NOSUCHOBJECT, 'name':rvalue[0], 'value':0})
+                    except TypeError as e:
+                        logger.debug("Exception OID Not Found!")
+                        response.values.append({'type': pyagentx.TYPE_NOSUCHOBJECT, 'name': rvalue[0], 'value': 0})
+                        
             elif request.type == pyagentx.AGENTX_GETNEXT_PDU:
                 logger.info("Received GET_NEXT PDU")
                 for rvalue in request.range_list:
