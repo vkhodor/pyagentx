@@ -58,7 +58,6 @@ class PDU(object):
             else:
                 # no prefix
                 prefix = 0
-                oid = ''
         except AttributeError as e:
             prefix = 0
         buf = struct.pack('BBBB', len(oid), prefix, include, 0)
