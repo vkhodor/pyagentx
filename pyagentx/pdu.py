@@ -249,39 +249,43 @@ class PDU(object):
             logger.debug('%s' % pprint.pformat(self.decode_buf))
 
     def decode(self, buf):
-        self.set_decode_buf(buf)
-        ret = self.decode_header()
-        if ret['pdu_type'] == pyagentx.AGENTX_RESPONSE_PDU:
-            # Decode Response Header
-            t = struct.unpack('!LHH', self.decode_buf[:8])
-            self.decode_buf = self.decode_buf[8:]
-            self.response = {
-                'sysUpTime': t[0],
-                'error':t[1],
-                'error_name':pyagentx.ERROR_NAMES[t[1]],
-                'index':t[2],
-            }
-            # Decode VarBindList
+        try:
+            self.set_decode_buf(buf)
+            ret = self.decode_header()
+            if ret['pdu_type'] == pyagentx.AGENTX_RESPONSE_PDU:
+                # Decode Response Header
+                t = struct.unpack('!LHH', self.decode_buf[:8])
+                self.decode_buf = self.decode_buf[8:]
+                self.response = {
+                    'sysUpTime': t[0],
+                    'error':t[1],
+                    'error_name':pyagentx.ERROR_NAMES[t[1]],
+                    'index':t[2],
+                }
+                # Decode VarBindList
+                self.values = []
+                while len(self.decode_buf):
+                    self.values.append(self.decode_value())
+
+            elif ret['pdu_type'] == pyagentx.AGENTX_GET_PDU:
+                self.range_list = self.decode_search_range_list()
+
+            elif ret['pdu_type'] == pyagentx.AGENTX_GETNEXT_PDU:
+                self.range_list = self.decode_search_range_list()
+
+            elif ret['pdu_type'] == pyagentx.AGENTX_TESTSET_PDU:
+                # Decode VarBindList
+                self.values = []
+                while len(self.decode_buf):
+                    self.values.append(self.decode_value())
+            elif ret['pdu_type'] in [pyagentx.AGENTX_COMMITSET_PDU,
+                                     pyagentx.AGENTX_UNDOSET_PDU,
+                                     pyagentx.AGENTX_CLEANUPSET_PDU]:
+                pass
+            else:
+                pdu_type_str = pyagentx.PDU_TYPE_NAME.get(ret['pdu_type'], 'Unknown:'+ str(ret['pdu_type']))
+                logger.error('Unsupported PDU type:'+ pdu_type_str)
+        except TypeError as e:
+            logger.error('Unsupported PDU type:' + str(ret))
             self.values = []
-            while len(self.decode_buf):
-                self.values.append(self.decode_value())
-
-        elif ret['pdu_type'] == pyagentx.AGENTX_GET_PDU:
-            self.range_list = self.decode_search_range_list()
-
-        elif ret['pdu_type'] == pyagentx.AGENTX_GETNEXT_PDU:
-            self.range_list = self.decode_search_range_list()
-
-        elif ret['pdu_type'] == pyagentx.AGENTX_TESTSET_PDU:
-            # Decode VarBindList
-            self.values = []
-            while len(self.decode_buf):
-                self.values.append(self.decode_value())
-        elif ret['pdu_type'] in [pyagentx.AGENTX_COMMITSET_PDU,
-                                 pyagentx.AGENTX_UNDOSET_PDU,
-                                 pyagentx.AGENTX_CLEANUPSET_PDU]:
-            pass
-        else:
-            pdu_type_str = pyagentx.PDU_TYPE_NAME.get(ret['pdu_type'], 'Unknown:'+ str(ret['pdu_type']))
-            logger.error('Unsupported PDU type:'+ pdu_type_str)
 
