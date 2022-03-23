@@ -195,13 +195,17 @@ class Network(threading.Thread):
                         response.values.append({'type': pyagentx.TYPE_NOSUCHOBJECT, 'name': rvalue[0], 'value': 0})
             elif request.type == pyagentx.AGENTX_GETNEXT_PDU:
                 logger.info("Received GET_NEXT PDU")
-                for rvalue in request.range_list:
-                    oid = self._get_next_oid(rvalue[0],rvalue[1])
-                    logger.debug("GET_NEXT: %s => %s" % (rvalue[0], oid))
-                    if oid:
-                        response.values.append(self.data[oid])
-                    else:
-                        response.values.append({'type':pyagentx.TYPE_ENDOFMIBVIEW, 'name':rvalue[0], 'value':0})
+                try:
+                    for rvalue in request.range_list:
+                        oid = self._get_next_oid(rvalue[0],rvalue[1])
+                        logger.debug("GET_NEXT: %s => %s" % (rvalue[0], oid))
+                        if oid:
+                            response.values.append(self.data[oid])
+                        else:
+                            response.values.append({'type':pyagentx.TYPE_ENDOFMIBVIEW, 'name':rvalue[0], 'value':0})
+                except AttributeError as e:
+                    logger.debug("AttributeError OID Not Found!")
+                    response.values.append({'type': pyagentx.TYPE_NOSUCHOBJECT, 'name': rvalue[0], 'value': 0})
 
             elif request.type == pyagentx.AGENTX_TESTSET_PDU:
                 logger.info("Received TESTSET PDU")
@@ -231,7 +235,6 @@ class Network(threading.Thread):
                         response.error_index = idx
                         break
                 logger.debug('TestSet request passed')
-
 
             elif request.type == pyagentx.AGENTX_COMMITSET_PDU:
                 for handler in list(self._sethandlers.values()):
